@@ -1,0 +1,385 @@
+/* ============================================================
+   components.css — 何度も使う部品
+   ------------------------------------------------------------
+   ボタン・カード・アイコン・写真の枠など、ページのあちこちで使う部品をまとめている。
+   セクションごとの CSS（sections.css）は、これらを組み合わせて短く書く。
+
+   書き方のきまり
+   - CSS のネスト（入れ子）を使う。.btn { svg { … } } は「.btn の中の svg」を表す。
+   - & は、外側のセレクタ自身を表す。&:hover は .btn:hover、&.btn-sun は .btn.btn-sun のこと。
+   - 見た目を少しだけ変えたい部品は、変数（--card-pad、--ratio など）を用意して、使う側で値を変える。
+   ============================================================ */
+@layer components {
+
+  /* --- 本文へスキップ（Tab キーで選んだときだけ見える） ---
+     キーボードで操作する人が、メニューを飛ばして本文へ移れるリンク。
+     ふだんは translate で画面の外（上）へずらして隠し、選ばれたときだけ元の位置に戻す。 */
+  .skip-link {
+    position: fixed;
+    inset-block-start: .5rem;          /* 上から .5rem */
+    inset-inline-start: .5rem;         /* 左から .5rem */
+    z-index: 200;                      /* ほかの要素より手前に出す */
+    padding: .5rem 1rem;
+    border-radius: var(--radius);
+    background-color: var(--leaf-700);
+    color: var(--white);
+    translate: 0 -200%;
+
+    &:focus-visible { translate: 0 0; }
+  }
+
+  /* --- ボタン ---
+     HTML では <a class="btn"> のように付ける。
+     色違いは、btn-outline・btn-sun を並べて付ける（class="btn btn-sun"）。 */
+  .btn {
+    display: inline-flex;              /* 文字とアイコンを横に並べる */
+    align-items: center;
+    justify-content: center;
+    gap: .5em;                         /* 文字とアイコンのあいだ */
+    padding: .8em 1.6em;
+    border: 2px solid transparent;     /* 枠線の太さぶんを先に確保し、btn-outline と大きさをそろえる */
+    border-radius: 999px;              /* 大きな値にすると、両端が丸いカプセル形になる */
+    background-color: var(--leaf-600);
+    color: var(--white);
+    font-family: var(--font-round);
+    font-weight: 700;
+    line-height: 1.4;
+    transition: translate .25s ease, box-shadow .25s ease;   /* 変化を .25 秒かけてなめらかにする */
+
+    svg {
+      inline-size: 1.15em;             /* em は文字の大きさが基準。ボタンの文字に合わせて大きさが変わる */
+      block-size: 1.15em;
+    }
+
+    /* マウスを乗せると、少し浮き上がって影が付く */
+    &:hover {
+      translate: 0 -2px;
+      box-shadow: var(--shadow);
+    }
+
+    /* 押せない状態（お問い合わせフォームの送信ボタンなど） */
+    &:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      translate: 0 0;
+      box-shadow: none;
+    }
+
+    /* 白地に緑の枠 */
+    &.btn-outline {
+      border-color: var(--leaf-600);
+      background-color: var(--white);
+      color: var(--leaf-700);
+    }
+
+    /* 暗い背景の上で目立たせる黄色 */
+    &.btn-sun {
+      background-color: var(--sun-500);
+      color: var(--leaf-900);
+    }
+  }
+
+  /* --- カード：白地・枠線・角丸・影をまとめた箱 ---
+     「お花と雑貨」「こだわり」「ご注文の流れ」など、多くのセクションでこの箱を使う。
+     中の h3 と p の見た目も、ここでまとめて決めている。 */
+  .card {
+    padding: var(--card-pad, clamp(1.4rem, 3vw, 2rem));   /* --card-pad で余白だけ変えられる */
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background-color: var(--surface);
+    box-shadow: var(--shadow);
+
+    h3 {
+      margin-block-end: .4rem;
+      font-size: 1.15rem;
+    }
+
+    p {
+      font-size: .9375rem;
+      color: var(--text-soft);
+    }
+  }
+
+  /* リンクになっているカードだけ、マウスを乗せると浮かせる */
+  a.card {
+    display: block;
+    transition: translate .25s ease;
+
+    &:hover { translate: 0 -4px; }
+  }
+
+  /* --- 丸みのある四角に入れたアイコン ---
+     色は --icon-bg（背景）と --icon-fg（アイコン）で決める。
+     .dark の中や「ご注文の流れ」では、この 2 つの変数を差し替えて色を変えている。 */
+  .icon {
+    display: grid;
+    place-items: center;               /* 中身を上下左右の中央に置く */
+    inline-size: 52px;
+    block-size: 52px;
+    margin-block-end: 1rem;
+    border-radius: 16px;
+    background-color: var(--icon-bg);
+    color: var(--icon-fg);             /* SVG のアイコンは currentColor で、この色になる */
+
+    svg {
+      inline-size: 26px;
+      block-size: 26px;
+    }
+  }
+
+  /* --- 写真の枠。縦横比は --ratio で変えられる ---
+     aspect-ratio で枠の縦横比を決め、object-fit: cover で写真を枠いっぱいに収める。
+     はみ出した部分は切り取られる。写真ごとに縦横比が違っても、枠の形はそろう。 */
+  .photo {
+    overflow: hidden;                  /* 角丸の外にはみ出した写真を隠す */
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow);
+
+    img {
+      inline-size: 100%;
+      aspect-ratio: var(--ratio, 4 / 3);   /* --ratio が無ければ 4 / 3 */
+      object-fit: cover;
+    }
+  }
+
+  /* --- 暗い背景の区画 ---
+     役割の名前を付けた色（tokens）を差し替えるだけで、中の見出し・本文・カード・アイコンの色がまとめて変わる。
+     .card と同じ要素に付けたときに背景色が勝つよう、.card より後ろに書いている。
+     HTML では class="section dark" や class="card dark" のように付ける。 */
+  .dark {
+    --text: rgb(255 253 250 / .92);
+    --text-soft: rgb(255 253 250 / .75);
+    --heading: var(--white);
+    --accent: var(--sun-500);
+    --label: var(--sun-500);
+    --surface: rgb(255 255 255 / .08);     /* 暗い背景の上のカードは、白をうっすら重ねる */
+    --line: rgb(255 255 255 / .2);
+    --icon-bg: var(--sun-500);
+    --icon-fg: var(--leaf-900);
+
+    color: var(--text);
+    background-color: var(--leaf-800);
+  }
+
+  /* --- セクションの見出し ---
+     英字の小見出し（.sec-head-en）・見出し（h2）・説明文（.sec-head-lead）の 3 つを、中央にそろえて並べる。 */
+  .sec-head {
+    margin-block-end: clamp(2rem, 5vw, 3.5rem);
+    text-align: center;
+
+    h2 {
+      margin-block: .4rem .6rem;       /* 上 .4rem、下 .6rem */
+      font-size: clamp(1.6rem, 1.1rem + 2.4vw, 2.5rem);
+    }
+  }
+
+  .sec-head-en {
+    font-family: var(--font-en);
+    font-size: .8125rem;
+    font-weight: 700;
+    letter-spacing: .2em;              /* 文字と文字のあいだを広げる */
+    color: var(--label);
+  }
+
+  .sec-head-lead { color: var(--text-soft); }
+
+  /* --- タグ ---
+     「一輪から」「季節の花」のような小さな札を、横に並べる。
+     flex-wrap: wrap で、入りきらない札は次の行へ送る。 */
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin-block-start: 1rem;
+
+    li {
+      padding: .2em .8em;
+      border-radius: 999px;
+      background-color: var(--leaf-100);
+      color: var(--leaf-700);
+      font-size: .75rem;
+      font-weight: 700;
+    }
+  }
+
+  /* --- ロゴ ---
+     ロゴの画像と、店名（日本語・英字の 2 行）を横に並べる。ヘッダーとフッターで使う。 */
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+
+    img {
+      inline-size: 44px;
+      block-size: 44px;
+    }
+
+    strong {
+      display: block;
+      font-family: var(--font-round);
+      font-size: 1.0625rem;
+      line-height: 1.3;
+      white-space: nowrap;             /* 店名の途中で改行しない */
+      color: var(--heading);
+    }
+
+    small {
+      display: block;
+      font-size: .6875rem;
+      letter-spacing: .12em;
+      color: var(--text-soft);
+    }
+  }
+
+  /* --- ヘッダー ---
+     position: fixed で、スクロールしても画面の上に固定する。
+     固定したぶん本文の上が隠れるので、各セクションに scroll-margin-block-start を付けている（base.css）。 */
+  .site-header {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;                   /* 左右とも 0。画面の横幅いっぱいに広げる */
+    z-index: 100;
+    border-block-end: 1px solid var(--line);
+    background-color: rgb(252 249 243 / .85);   /* 少し透ける紙の色 */
+    backdrop-filter: blur(10px);   /* 後ろに流れる内容をすりガラスのようにぼかす */
+
+    /* ロゴ・メニュー・メニューボタンを横に並べ、両端に寄せる */
+    .site-header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      inline-size: min(100% - var(--gutter) * 2, var(--wrap));
+      block-size: var(--header-h);
+      margin-inline: auto;
+    }
+  }
+
+  /* 読み進めた割合を示す線。JavaScript が --progress に 0%〜100% を渡す
+     ヘッダー（position: fixed）の下端に、position: absolute で重ねている。 */
+  .scroll-progress {
+    position: absolute;
+    inset-block-end: -1px;
+    inset-inline-start: 0;
+    inline-size: var(--progress, 0%);
+    block-size: 3px;
+    background-image: linear-gradient(90deg, var(--leaf-600), var(--sun-500));   /* 左から右へ、緑から黄色へ */
+  }
+
+  /* --- メニュー ---
+     広い画面では横一列に並べ、狭い画面ではボタンで開閉するメニューにする。
+     切り替えの境目は 60rem（960px）。 */
+  .gnav {
+    ul a {
+      display: block;
+      padding-block: .3rem;
+      text-decoration: none;                       /* メニューの項目には下線を付けない */
+      border-block-end: 2px solid transparent;   /* 下線の場所だけ先に取っておき、:hover で色を付ける */
+      color: var(--text-soft);
+      font-size: clamp(.75rem, .2rem + .9vw, .9375rem);   /* 画面が狭いほど小さく */
+      font-weight: 700;
+      white-space: nowrap;                                /* 項目の途中で改行しない */
+
+      /* 今見ているセクションは、JavaScript が .is-current を付ける */
+      &:hover, &.is-current {
+        border-block-end-color: var(--sun-500);
+        color: var(--leaf-700);
+      }
+    }
+
+    /* 広い画面：横一列に並べる */
+    @media (width >= 60rem) {
+      display: flex;
+      align-items: center;
+      gap: clamp(.8rem, 1.6vw, 1.5rem);
+
+      ul {
+        display: flex;
+        gap: clamp(.7rem, 1.4vw, 1.6rem);
+      }
+
+      /* ヘッダーの「お店のご案内」ボタンは、ほかのボタンより少し小さくする */
+      .btn {
+        padding: .6em 1.2em;
+        font-size: clamp(.8125rem, .3rem + .8vw, 1rem);
+        white-space: nowrap;
+      }
+    }
+
+    /* 狭い画面：ボタンで開くまで隠しておく
+       開くと、JavaScript が .is-open を付ける。ヘッダーのすぐ下に、画面幅いっぱいで表示する。 */
+    @media (width < 60rem) {
+      display: none;
+      position: fixed;
+      inset: var(--header-h) 0 auto;   /* 上 左右 下 の順。上はヘッダーの高さの位置から */
+      padding: 1rem var(--gutter) 2rem;
+      border-block-end: 1px solid var(--line);
+      background-color: var(--paper);
+      box-shadow: var(--shadow);
+
+      &.is-open {
+        display: grid;
+        gap: 1.2rem;
+      }
+
+      /* 指で押しやすいよう、項目を大きく、縦に区切る */
+      ul a {
+        padding-block: .8rem;
+        border-block-end: 1px dashed var(--line);
+        font-size: 1rem;
+      }
+    }
+  }
+
+  /* メニューを開くボタン。開いているかどうかは aria-expanded で見分ける
+     閉じているときは「三本線」、開いているときは「×」のアイコンを表示する。
+     aria-expanded は読み上げソフトにも開閉を伝える属性で、JavaScript が書き換える。 */
+  .nav-toggle {
+    display: grid;
+    place-items: center;
+    inline-size: 44px;                 /* 44px 以上あると、指で押しやすい */
+    block-size: 44px;
+    border: 1px solid var(--line);
+    border-radius: 50%;                /* 50% で円になる */
+    color: var(--leaf-700);
+
+    svg {
+      inline-size: 24px;
+      block-size: 24px;
+    }
+
+    .nav-toggle-close { display: none; }
+
+    &[aria-expanded="true"] {
+      .nav-toggle-open { display: none; }
+      .nav-toggle-close { display: block; }
+    }
+
+    @media (width >= 60rem) { display: none; }   /* 広い画面ではメニューが常に見えるので不要 */
+  }
+
+  /* --- ページ上部へ戻るボタン（スクロールすると JavaScript が .is-visible を付ける） ---
+     画面の右下に固定する。最初は display: none で隠しておく。 */
+  .to-top {
+    position: fixed;
+    inset-block-end: 1.25rem;          /* 下から 1.25rem */
+    inset-inline-end: 1.25rem;         /* 右から 1.25rem */
+    z-index: 90;
+    display: none;
+    place-items: center;
+    inline-size: 48px;
+    block-size: 48px;
+    border-radius: 50%;
+    background-color: var(--leaf-600);
+    color: var(--white);
+    box-shadow: var(--shadow);
+
+    svg {
+      inline-size: 22px;
+      block-size: 22px;
+      rotate: -90deg;   /* 右向きの矢印を上向きにして使う */
+    }
+
+    &.is-visible { display: grid; }
+  }
+}

@@ -1,0 +1,19 @@
+@charset "UTF-8";
+/* ============================================================
+   style.css — CSS の入口
+   ------------------------------------------------------------
+   index.html が読み込むのは、このファイル 1 つだけ。
+   ここから、役割ごとに分けた 4 つのファイルを @import で読み込む。
+
+   @layer で層の順番を先に決めておく。後ろの層ほど優先され、ファイルを読む順番には左右されない。
+     reset → tokens → base → layout → components → sections → utilities
+     （弱い）                                                    （強い）
+   たとえば sections の指定は、components の同じ指定より必ず優先される。
+   そのため、セレクタを長くして優先度を上げる工夫が要らない。
+   ============================================================ */
+@layer reset, tokens, base, layout, components, sections, utilities;
+
+@import url("base.css");         /* reset・tokens・base・layout */
+@import url("components.css");   /* ボタン・カードなどの共通部品 */
+@import url("sections.css");     /* ページの各セクション */
+@import url("utilities.css");    /* 表示の演出・印刷 */

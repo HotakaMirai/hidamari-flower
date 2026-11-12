@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<!--
+  お問い合わせを送ったあとに表示するページ。
+  SSGform（フォームの送信を受け付けるサービス）の管理画面で、送信後の移動先としてこのページを設定する。
+  見た目は index.html と同じ style.css を使い、.thanks と .card でカードを画面の中央に置く（sections.css）。
+-->
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <!-- noindex で、このページを検索結果に出さないようにする -->
+  <meta name="robots" content="noindex">
+  <title>お問い合わせありがとうございます｜ひだまりフラワー</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <link rel="stylesheet" href="stylesheets/style.css">
+</head>
+<body>
+  <main class="thanks">
+    <div class="card">
+      <h1>お問い合わせありがとうございます</h1>
+      <p>内容を受け付けました。確認後、メールでご連絡します。</p>
+      <a class="btn" href="index.html">トップページへ戻る</a>
+    </div>
+  </main>
+</body>
+</html>

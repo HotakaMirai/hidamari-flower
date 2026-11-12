@@ -1,0 +1,195 @@
+/* ============================================================
+   base.css — サイト全体の土台
+   ------------------------------------------------------------
+   このファイルには、次の 4 つの層（@layer）を書いている。
+     1. reset  … ブラウザごとの見た目の差をそろえる
+     2. tokens … 色・文字・余白などの共通の値を、変数（カスタムプロパティ）として決める
+     3. base   … body や見出しなど、HTML の要素そのものの見た目
+     4. layout … 幅をそろえる入れ物や、並べるためのグリッド
+   層の優先順位は style.css の @layer 宣言で決まる（後ろの層ほど強い）。
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. Reset — ブラウザごとの差をそろえる
+   ------------------------------------------------------------
+   :where() で包んだセレクタは詳細度（優先度の強さ）が 0 になる。
+   あとから書く指定で、いつでも上書きできるようにするための工夫。 */
+@layer reset {
+  /* 幅や高さに、内側の余白（padding）と枠線（border）を含めて計算する。
+     inline-size: 200px と書けば、枠線まで含めてちょうど 200px になる。 */
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :where(html) {
+    -webkit-text-size-adjust: 100%;   /* iPhone の横向きで文字が大きくならないように */
+    scroll-behavior: smooth;          /* ページ内リンクで、なめらかにスクロールする */
+  }
+
+  /* ブラウザが最初から付けている外側・内側の余白を消す。
+     余白は、必要な場所で自分で付ける。 */
+  :where(body, h1, h2, h3, p, figure, dl, dd, ul, ol, fieldset) {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 部品として使うリスト（class 付き）とメニューのリストは、先頭の黒丸を消す */
+  :where(ul[class], ol[class], nav ul) { list-style: none; }
+
+  /* 画像と SVG をブロック要素にし、親の幅より大きくならないようにする。
+     block-size: auto で、縦横比を保ったまま縮む。 */
+  :where(img, svg) {
+    display: block;
+    max-inline-size: 100%;
+    block-size: auto;
+  }
+
+  /* リンクは周りの文字色を受け継ぐ。
+     下線は、class を付けて部品として形を整えるリンク（ボタン・カード・ロゴなど）だけ消す。
+     class のない文章の中のリンクには下線を残し、押せることが分かるようにする。 */
+  :where(a) { color: inherit; }
+  :where(a[class]) { text-decoration: none; }
+
+  /* フォームの部品は、ブラウザ独自の文字の大きさや色ではなく、ページと同じものを使う */
+  :where(button, input, select, textarea) {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* ボタンの背景と枠を消し、マウスを乗せると指の形のカーソルにする */
+  :where(button) {
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
+  :where(fieldset) { border: 0; }
+  :where(table) { border-collapse: collapse; }   /* 表のセルの枠線を 1 本にまとめる */
+}
+
+/* ------------------------------------------------------------
+   2. Tokens — 花と葉、陽だまりの色
+   ------------------------------------------------------------
+   「--」で始まる名前は、カスタムプロパティ（CSS の変数）。
+   ここで一度決めておき、各所では var(--leaf-600) のように呼び出して使う。
+   色を変えたくなったら、ここを 1 か所直すだけでサイト全体が変わる。 */
+@layer tokens {
+  :root {
+    /* 葉の緑。数字が大きいほど濃い */
+    --leaf-900: #1e3827;
+    --leaf-800: #284831;
+    --leaf-700: #345b3d;
+    --leaf-600: #416b49;
+    --leaf-100: #e2eee1;
+
+    /* 花びらの黄色 */
+    --sun-700: #a87428;
+    --sun-500: #e2b65e;
+
+    /* 紙の色 */
+    --paper: #fcf9f3;
+    --paper-warm: #f8ece2;
+    --white: #fffdfa;
+
+    /* 役割で名前を付けた色。ページではこちらを使う。
+       暗い背景の .dark では、この値だけを差し替える（components.css） */
+    --text: #2d3b31;
+    --text-soft: rgb(45 59 49 / .75);   /* 「/ .75」は不透明度 75%。少し薄い本文 */
+    --heading: var(--leaf-800);
+    --accent: var(--leaf-600);        /* 見出しの強調 <em> */
+    --label: var(--sun-700);          /* 英字の小見出しなど */
+    --surface: var(--white);          /* カードの地 */
+    --line: rgb(65 107 73 / .18);
+    --icon-bg: var(--leaf-600);
+    --icon-fg: var(--white);
+
+    /* 文字。先頭から順に探し、パソコンに入っている最初のフォントが使われる */
+    --font-sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP",
+                 "Yu Gothic Medium", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    --font-round: "Hiragino Maru Gothic ProN", "Hiragino Sans", "Noto Sans JP",
+                  "Yu Gothic Medium", system-ui, sans-serif;
+    --font-en: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+
+    /* 余白・角丸・影 */
+    --wrap: 1160px;                          /* 本文の最大幅 */
+    --gutter: clamp(1.25rem, 4vw, 3rem);     /* 画面の左右に空ける余白 */
+    --section-py: clamp(4rem, 9vw, 7rem);    /* セクションの上下の余白 */
+    --radius: 18px;
+    --radius-l: 28px;
+    --shadow: 0 12px 32px -14px rgb(30 56 39 / .3);   /* 横 縦 ぼかし 広がり 色 */
+    --header-h: 68px;                        /* 固定ヘッダーの高さ */
+
+    /* 広い画面では、ヘッダーを少し高くする */
+    @media (width >= 60rem) {
+      --header-h: 80px;
+    }
+  }
+}
+
+/* ------------------------------------------------------------
+   3. Base — HTML の要素そのものの見た目
+   ------------------------------------------------------------ */
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    /* clamp(最小, 基本, 最大)。画面幅に合わせて、最小と最大のあいだで大きさが変わる */
+    font-size: clamp(.95rem, .9rem + .25vw, 1.0625rem);
+    line-height: 1.9;                  /* 行の高さ。日本語は広めのほうが読みやすい */
+    color: var(--text);
+    background-color: var(--paper);
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-round);
+    line-height: 1.45;
+    text-wrap: balance;                /* 見出しの各行の長さを、なるべくそろえて折り返す */
+    color: var(--heading);
+  }
+
+  p { text-wrap: pretty; }             /* 最後の行が 1 文字だけになるのを避ける */
+
+  /* <em> は斜体をやめ、色で強調する */
+  em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  /* Tab キーで選んだ部品に付く枠。消さずに、サイトの色で目立たせる */
+  :focus-visible {
+    outline: 3px solid var(--sun-500);
+    outline-offset: 3px;
+  }
+}
+
+/* ------------------------------------------------------------
+   4. Layout — 幅をそろえる入れ物と、並べるためのグリッド
+   ------------------------------------------------------------ */
+@layer layout {
+  /* 中身を中央に寄せる入れ物。
+     「画面幅から左右の余白を引いた幅」と「--wrap」の、小さいほうの幅になる。 */
+  .wrap {
+    inline-size: min(100% - var(--gutter) * 2, var(--wrap));
+    margin-inline: auto;
+
+    &.wrap-narrow { --wrap: 820px; }   /* 文章が中心のセクションは幅を狭める */
+  }
+
+  .section {
+    padding-block: var(--section-py);
+    scroll-margin-block-start: var(--header-h);   /* 固定ヘッダーの下に隠れないように */
+
+    /* 背景に色を敷くセクション。HTML で class="section section-tint" のように付ける */
+    &.section-tint { background-color: var(--leaf-100); }
+    &.section-warm { background-color: var(--paper-warm); }
+  }
+
+  /* 並べるための共通グリッド。1 つの最小幅 --min を下回ると、自動で列が減る。
+     メディアクエリを書かなくても、画面の幅に合わせて 1〜4 列に変わる。
+       repeat(auto-fit, …)  … 入るだけ列を作る
+       minmax(最小, 1fr)    … 各列は最小幅以上で、余った幅は均等に分ける
+       min(100%, …)         … 画面が最小幅より狭いときは、はみ出さず 1 列にする
+     使う側では .service-grid { --min: 24rem; } のように、最小幅だけを変える。 */
+  .grid {
+    display: grid;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min, 15rem)), 1fr));
+  }
+}

@@ -1,0 +1,728 @@
+/* ============================================================
+   sections.css — ページの各セクション
+   ------------------------------------------------------------
+   上から順に、ページの並びと同じ順番で書いている。
+   共通部品（components.css の .card・.icon・.photo、base.css の .grid など）で
+   足りない部分だけを書くので、セクションごとの指定は短い。
+
+   よく出てくる書き方
+   - --min: 18rem;  … .grid と組み合わせた要素で、1 つの最小幅を変える（列の数が変わる）
+   - --ratio: 3 / 4; … .photo と組み合わせた要素で、写真の縦横比を変える
+   - --card-pad: 0;  … .card と組み合わせた要素で、内側の余白を変える
+   ============================================================ */
+@layer sections {
+
+  /* ====== ヒーロー（ページの最初に見える領域） ====== */
+  .hero {
+    padding-block: var(--header-h) var(--section-py);   /* 固定ヘッダーの高さぶん下げて、すぐ下に帯を置く */
+    /* 右上から差す光を、放射状のグラデーション 1 枚で描く。
+       circle at 85% 10% … 横 85%・縦 10% の位置を中心にした円
+       色 → transparent 60% … 中心の色から、半径 60% の位置で透明になる */
+    background-image: radial-gradient(circle at 85% 10%, rgb(226 182 94 / .3), transparent 60%);
+
+    /* 文章（左）と写真（右）の 2 列。狭い画面では、自動で 1 列に縦に並ぶ（.grid） */
+    .hero-inner {
+      --min: 22rem;
+      margin-block-start: clamp(2rem, 6vw, 5rem);
+      align-items: center;               /* 2 列の高さが違うとき、上下の中央にそろえる */
+      gap: clamp(2rem, 5vw, 4rem);
+    }
+
+    /* 「街角の小さな花屋」の札 */
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .3em 1em;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background-color: var(--white);
+      color: var(--leaf-700);
+      font-size: .8125rem;
+      font-weight: 700;
+
+      svg {
+        inline-size: 1em;
+        block-size: 1em;
+        color: var(--sun-500);
+      }
+    }
+
+    h1 {
+      margin-block: 1rem .6rem;
+      font-size: clamp(2rem, 1.1rem + 4.4vw, 3.4rem);
+      line-height: 1.35;
+
+      /* 文字の下半分に、蛍光ペンのような線を引く。
+         上から 62% までは透明、62% から下だけ黄色にしたグラデーションを背景に敷いている */
+      em { background-image: linear-gradient(transparent 62%, rgb(226 182 94 / .4) 62%); }
+    }
+
+    .hero-en {
+      font-family: var(--font-en);
+      letter-spacing: .06em;
+      color: var(--text-soft);
+    }
+
+    .hero-lead {
+      margin-block-start: 1.2rem;
+      color: var(--text-soft);
+    }
+
+    /* 2 つのボタン。狭い画面で入りきらないときは、折り返して 2 段にする */
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      margin-block-start: 1.8rem;
+    }
+
+    .hero-photo { --ratio: 16 / 10; }
+
+    /* 少し傾けて写真の下端に重ねる紹介カード。マウスを乗せるとまっすぐに戻る */
+    .hero-card {
+      position: relative;                 /* 写真より手前に重ねる */
+      inline-size: min(80%, 300px);
+      margin-block-start: -3rem;          /* 上へ食い込ませて、写真に重ねる */
+      margin-inline: auto 1.5rem;         /* 右寄せ */
+      text-align: center;
+      rotate: -2deg;                      /* マイナスで反時計回りに傾く */
+      transition: rotate .4s ease;
+
+      &:hover { rotate: 0deg; }
+
+      img {
+        inline-size: 150px;
+        margin-inline: auto;              /* 左右の余白を自動にして、中央に置く */
+      }
+
+      .hero-catch {
+        margin-block-start: .8rem;
+        font-family: var(--font-round);
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: var(--heading);
+      }
+
+      .hero-owner {
+        margin-block-start: .8rem;
+        padding-block-start: .8rem;
+        border-block-start: 1px solid var(--line);   /* 上に区切り線 */
+        font-size: .8125rem;
+      }
+    }
+  }
+
+  /* 流れるキャッチコピー。
+     2 つの組がそれぞれ自分の幅のぶんだけ左へ進み、最初に戻る。
+     1 つめが流れ去った場所へ、ちょうど 2 つめが来るので、つなぎ目が見えない。
+     HTML では、同じ文を並べた <p> を 2 つ置いている。 */
+  .marquee {
+    display: flex;
+    overflow: hidden;                    /* 帯からはみ出した文字は見せない */
+    padding-block: .6rem;
+    border-block-end: 1px solid var(--line);
+    background-color: var(--white);
+
+    p {
+      display: flex;
+      flex: none;                   /* 縮めずに、文の長さのまま並べる */
+      justify-content: space-around;
+      gap: 3rem;
+      min-inline-size: 100%;        /* 文が画面より短くても、画面の幅までは広げて空白を作らない */
+      padding-inline-end: 3rem;     /* 組と組のつなぎ目にも、同じ間隔を空ける */
+      /* 下の @keyframes marquee を、40 秒かけて、一定の速さで、くり返し動かす */
+      animation: marquee 40s linear infinite;
+    }
+
+    span {
+      font-family: var(--font-round);
+      font-size: .875rem;
+      letter-spacing: .14em;
+      white-space: nowrap;
+      color: var(--leaf-600);
+
+      /* 偶数番目（2 つめ、4 つめ）の英文だけ、字体と色を変える */
+      &:nth-child(even) {
+        font-family: var(--font-en);
+        color: var(--sun-700);
+      }
+    }
+  }
+
+  /* アニメーションの動き。最後（to）に、自分の幅のぶん（-100%）左へずれる */
+  @keyframes marquee {
+    to { translate: -100% 0; }
+  }
+
+  /* ====== ふだんの日にも ======
+     6 つの .card を .grid で並べる。1 つの最小幅は 18rem */
+  .trouble-list {
+    --min: 18rem;
+
+    li { border-inline-start: 4px solid var(--sun-500); }   /* 左端に黄色の線 */
+  }
+
+  /* ====== お店について ======
+     文章と写真の 2 列（.grid）。狭い画面では縦に並ぶ */
+  .about-story {
+    --min: 20rem;
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 3rem);
+
+    p {
+      line-height: 2;
+      color: var(--text-soft);
+    }
+
+    p + p { margin-block-start: 1.2rem; }   /* 段落と段落のあいだだけに余白を空ける */
+  }
+
+  .about-closing {
+    margin-block-start: clamp(2rem, 5vw, 3rem);
+    font-family: var(--font-round);
+    font-size: clamp(1.25rem, 1rem + 1.6vw, 2rem);
+    font-weight: 700;
+    text-align: center;
+    color: var(--leaf-700);
+  }
+
+  /* ====== お花と雑貨 ======
+     4 つの .card。最小幅を 24rem と大きめにして、広い画面でも 2 列 × 2 段にする */
+  .service-grid { --min: 24rem; }
+
+  /* ====== こだわり ====== */
+  .reason-grid { --min: 15rem; }
+
+  /* 先頭の 1 枚だけ、写真を背景にして横いっぱいに広げる
+     HTML では class="card dark reason-feature"。.dark で文字の色が白系に変わる */
+  .reason-feature {
+    grid-column: 1 / -1;                 /* 1 列目から最後の列まで。つまり横いっぱい */
+    padding-block: clamp(2rem, 5vw, 3.5rem);
+    /* 写真の上に暗いグラデーションを 1 枚重ね、文字を読みやすくする
+       カンマで区切った背景は、先に書いたものが手前に重なる */
+    background-image:
+      linear-gradient(90deg, rgb(30 56 39 / .92) 35%, rgb(30 56 39 / .35)),
+      url("../images/image.webp");
+    background-size: cover;              /* 写真を、枠いっぱいに広げる */
+    background-position: center 58%;     /* 写真のどこを見せるか（横 中央・縦 58%） */
+
+    .reason-catch {
+      margin-block-start: 1rem;
+      font-family: var(--font-round);
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--sun-500);
+    }
+  }
+
+  /* ====== 花束を選ぶ流れ ======
+     .icon の色は変数で決まるので、ここで変数を差し替えるだけで番号の丸が黄色になる */
+  .flow-list {
+    --min: 15rem;
+    --icon-bg: var(--sun-500);   /* 番号の丸だけ黄色にする */
+    --icon-fg: var(--leaf-900);
+
+    .icon {
+      border-radius: 50%;                /* 四角ではなく円にする */
+      font-family: var(--font-en);
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+  }
+
+  /* ====== 料金の目安 ======
+     料金表（左）とシミュレーター（右）の 2 列 */
+  .price-layout {
+    --min: 22rem;
+    align-items: start;                  /* 高さをそろえず、上端に合わせる */
+  }
+
+  .price-table {
+    inline-size: 100%;
+
+    /* 表の題名（<caption>） */
+    caption {
+      margin-block-end: 1rem;
+      font-family: var(--font-round);
+      font-size: 1.125rem;
+      font-weight: 700;
+      text-align: start;
+      color: var(--heading);
+    }
+
+    th, td {
+      padding: .8rem;
+      border-block-end: 1px solid var(--line);
+      text-align: start;                 /* 左寄せ */
+    }
+
+    /* 見出しの行（<thead>）だけ、緑の地に白い文字 */
+    thead th {
+      background-color: var(--leaf-600);
+      color: var(--white);
+      font-size: .8125rem;
+    }
+
+    tbody th { color: var(--heading); }
+    td { color: var(--text-soft); }
+  }
+
+  /* 料金シミュレーター（HTML では .card .dark と組み合わせている） */
+  .sim {
+    .sim-field { margin-block-start: 1.4rem; }
+
+    /* 項目名。label[for] は「for 属性を持つ label」だけを選ぶ（点数のスライダーの名前）。
+       ラジオボタンやチェックボックスを包む label（.choice）には当たらない */
+    legend, label[for] {
+      display: block;
+      margin-block-end: .6rem;
+      font-family: var(--font-round);
+      font-weight: 700;
+    }
+
+    output { color: var(--sun-500); }    /* 計算結果を表示する <output> */
+
+    /* 点数のスライダー。accent-color で、つまみと線の色をサイトの色にする */
+    input[type="range"] {
+      inline-size: 100%;
+      accent-color: var(--sun-500);
+    }
+
+    /* ラジオボタンとチェックボックスの行
+       <label> で包んでいるので、行のどこを押しても選べる */
+    .choice {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      margin-block-end: .5rem;
+      padding: .6rem .9rem;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      cursor: pointer;
+
+      input {
+        inline-size: 1.2rem;
+        block-size: 1.2rem;
+        margin: 0;
+        accent-color: var(--sun-500);
+      }
+
+      /* 選ばれている行を強調する
+         :has(input:checked) … 「チェックされた input を中に持つ .choice」を選ぶ。JavaScript は要らない */
+      &:has(input:checked) {
+        border-color: var(--sun-500);
+        background-color: rgb(226 182 94 / .15);
+      }
+    }
+
+    /* 「合計金額」と金額を、左右の両端に分けて置く */
+    .sim-result {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;             /* 大きさの違う文字の、下のそろえ線を合わせる */
+      justify-content: space-between;
+      margin-block: 1.6rem 1.2rem;
+      padding: 1rem 1.2rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background-color: var(--surface);
+    }
+
+    .sim-amount {
+      font-family: var(--font-round);
+      font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2rem);
+      font-weight: 700;
+    }
+
+    /* 注文のボタンの下の注記。作例であることを、小さな文字で添える */
+    .sim-note {
+      margin-block-start: .8rem;
+      font-size: .85rem;
+      opacity: .85;
+    }
+  }
+
+  /* ====== 店主のご挨拶 ======
+     写真と文章を flex で横に並べ、入りきらなければ折り返して縦に並べる */
+  .profile {
+    --card-pad: clamp(1.5rem, 4vw, 3rem);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 3rem);
+
+    /* flex: 0 1 260px … 広がらない・縮んでよい・基本の幅は 260px */
+    .profile-photo {
+      --ratio: 3 / 4;
+      flex: 0 1 260px;
+      margin-inline: auto;
+
+      img { object-position: 63% center; }   /* 人物が枠の中央に来るように */
+    }
+
+    /* flex: 1 1 22rem … 余った幅まで広がる・縮んでよい・基本の幅は 22rem */
+    .profile-body { flex: 1 1 22rem; }
+
+    .profile-role {
+      font-size: .8125rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      color: var(--label);
+    }
+
+    .profile-name {
+      margin-block: .3rem 1.2rem;
+      font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.2rem);
+
+      /* 名前の横の英字 */
+      span {
+        margin-inline-start: .8rem;
+        font-family: var(--font-en);
+        font-size: .875rem;
+        color: var(--text-soft);
+      }
+    }
+
+    .profile-msg + .profile-msg { margin-block-start: 1rem; }
+    strong { color: var(--leaf-700); }
+  }
+
+  /* チェックの印を付けた箇条書き */
+  .check-list {
+    display: grid;
+    gap: .5rem;
+    margin-block-start: 1.5rem;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-weight: 700;
+      color: var(--heading);
+    }
+
+    svg {
+      inline-size: 18px;
+      block-size: 18px;
+      color: var(--leaf-600);
+    }
+  }
+
+  /* ====== 季節の花たち ======
+     3 枚の写真（.photo）を .grid で並べる。写真を押すと拡大表示が開く（main.js） */
+  .gallery {
+    --min: 14rem;
+
+    figure {
+      --ratio: 3 / 4;                    /* 縦長の写真に合わせた枠 */
+      container-type: inline-size;
+    }
+
+    /* 写真の下の説明文 */
+    figcaption {
+      padding: .8rem;
+      background-color: var(--surface);
+      font-family: var(--font-round);
+      font-size: min(1rem, 3.8cqi);       /* カード幅に合わせ、説明文を1行に収める */
+      font-weight: 700;
+      white-space: nowrap;
+      text-align: center;
+      color: var(--heading);
+    }
+
+    a {
+      display: block;
+      cursor: zoom-in;                   /* 虫めがね（＋）の形のカーソル */
+    }
+
+    /* マウスを乗せると、写真を少しだけ拡大する。枠（.photo）からはみ出た部分は隠れる */
+    img { transition: scale .35s ease; }
+    a:hover img { scale: 1.04; }
+  }
+
+  /* 写真の拡大表示。ブラウザ標準の <dialog> を使う
+     showModal() で開くと、ページの手前に重なり、Esc キーで閉じられる */
+  .lightbox {
+    inline-size: min(100% - 2rem, 900px);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius);
+
+    /* 開いているあいだ、ページ全体に重なる暗い幕 */
+    &::backdrop { background-color: rgb(0 0 0 / .75); }
+
+    /* 写真が画面の高さに収まるようにする。dvh は画面の高さの 1%。下の操作部分のぶん 8rem を引く */
+    img {
+      max-block-size: calc(100dvh - 8rem);
+      margin-inline: auto;
+    }
+
+    /* 前へ・説明文・次へ・閉じる を横に並べた操作部分 */
+    .lightbox-bar {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .6rem;
+    }
+
+    .lightbox-caption {
+      flex: 1;                           /* 残りの幅をすべて使い、ボタンを両端に押し出す */
+      font-weight: 700;
+      text-align: center;
+    }
+
+    button {
+      display: grid;
+      place-items: center;
+      inline-size: 2.75rem;
+      block-size: 2.75rem;
+      border-radius: 50%;
+      background-color: var(--surface);
+
+      &:hover { background-color: rgb(255 255 255 / .25); }
+    }
+
+    svg {
+      inline-size: 1.25rem;
+      block-size: 1.25rem;
+    }
+
+    .lightbox-prev svg { rotate: 180deg; }   /* 右向きの矢印を左向きにする */
+  }
+
+  /* ====== よくある質問 ======
+     <details> と <summary> は、押すと開閉する HTML の標準の部品。
+     name="faq" を付けているので、1 つ開くとほかは閉じる */
+  .faq-list {
+    display: grid;
+    gap: .8rem;
+  }
+
+  .faq {
+    --card-pad: 1rem 1.4rem;             /* 上下 1rem・左右 1.4rem */
+
+    /* 質問の行（押すと開閉する部分） */
+    summary {
+      font-family: var(--font-round);
+      font-weight: 700;
+      color: var(--heading);
+      cursor: pointer;
+    }
+
+    p { margin-block-start: .6rem; }
+  }
+
+  /* ====== お店のご案内（HTML では .dark と組み合わせている） ======
+     店内の写真に暗いグラデーションを重ねて背景にする */
+  .visit {
+    background-image:
+      linear-gradient(rgb(30 56 39 / .92), rgb(30 56 39 / .8)),
+      url("../images/shop-interior.webp");
+    background-size: cover;
+    background-position: center;
+
+    /* 営業時間と定休日。<dl>（用語と説明のリスト）を横に並べる */
+    .hours {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: .5rem 2rem;                   /* 行のあいだ .5rem、項目のあいだ 2rem */
+      margin-block-start: 1.2rem;
+      font-weight: 700;
+
+      div {
+        display: flex;
+        gap: .6rem;
+      }
+
+      dt { color: var(--label); }
+    }
+
+    /* 住所・電話・メールの 3 枚の .card */
+    .contact-cards { --min: 15rem; }
+
+    .contact-label {
+      display: block;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      color: var(--text-soft);
+    }
+
+    .contact-value {
+      font-family: var(--font-round);
+      font-size: clamp(1.0625rem, .95rem + .5vw, 1.3rem);
+      color: var(--heading);
+      overflow-wrap: anywhere;   /* 長いメールアドレスも折り返す */
+    }
+
+    .visit-form-link {
+      margin-block-start: 2rem;
+      text-align: center;
+    }
+
+    /* 地図のカード。地図を端まで広げるため、カードの内側の余白を 0 にする */
+    .visit-map {
+      --card-pad: 0;
+      overflow: hidden;                  /* 角丸からはみ出す地図を隠す */
+      margin-block-start: clamp(2rem, 5vw, 3.5rem);
+
+      .visit-map-intro { padding: clamp(1.2rem, 3vw, 2rem); }
+
+      /* Google マップの埋め込み */
+      iframe {
+        display: block;
+        inline-size: 100%;
+        block-size: clamp(280px, 42vw, 420px);
+        border: 0;
+      }
+    }
+  }
+
+  /* ====== お問い合わせフォーム ======
+     HTML では class="card contact-form"。入力欄は .grid で 2 列に並べる */
+  .contact-form {
+    --card-pad: clamp(1.3rem, 4vw, 2.5rem);
+
+    .form-grid { --min: 16rem; }
+
+    /* 項目名と入力欄を、縦に並べた 1 組 */
+    .field {
+      display: grid;
+      align-content: start;
+      gap: .4rem;
+    }
+
+    .field-wide { grid-column: 1 / -1; }   /* お問い合わせ内容の欄などを、横いっぱいに広げる */
+
+    /* 受け取り方は「ご注文」のときだけ、お届け先は「お届けする」を選んだときだけ表示する。
+       :has() で、フォームの中で選ばれているものを見て切り替える（JavaScript は要らない） */
+    .receive-field, .delivery-field { display: none; }
+    &:has(#contactTopic option[value="ご注文"]:checked) .receive-field { display: grid; }
+    &:has(#contactTopic option[value="ご注文"]:checked):has([data-delivery]:checked) .delivery-field { display: grid; }
+
+    /* 郵便番号は 7 桁なので、入力欄を短くする。行は横いっぱいに使い、下の案内の文は折り返さずに読めるようにする */
+    .field-postal input { inline-size: min(100%, 15rem); }
+
+    /* 受け取り方のラジオボタン。下の input の指定（幅いっぱい・高さ 3.2rem）を打ち消し、横に並べる */
+    .receive-field {
+      grid-auto-flow: column;
+      justify-content: start;
+      gap: .4rem 1.5rem;
+
+      legend {
+        margin-block-end: .4rem;
+        font-weight: 700;
+        color: var(--heading);
+      }
+
+      label {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        font-weight: 400;
+        color: var(--text);
+      }
+
+      input {
+        inline-size: 1.2rem;
+        block-size: 1.2rem;
+        padding: 0;
+        accent-color: var(--leaf-600);
+      }
+    }
+
+    label {
+      font-weight: 700;
+      color: var(--heading);
+    }
+
+    input, select, textarea {
+      inline-size: 100%;
+      padding: .7rem .9rem;
+      border: 1px solid rgb(65 107 73 / .4);
+      border-radius: 10px;
+      background-color: var(--white);
+    }
+
+    input, select { block-size: 3.2rem; }   /* 1 行の欄の高さをそろえる */
+
+    textarea {
+      min-block-size: 10rem;
+      resize: vertical;                  /* 利用者が変えられるのは、高さだけにする */
+    }
+
+    /* 「必須」「任意」の小さな文字 */
+    .required, .optional {
+      margin-inline-start: .3rem;
+      font-size: .75rem;
+    }
+
+    .required { color: var(--sun-700); }
+    .optional { color: var(--text-soft); }
+
+    /* 入力欄の下の案内と文字数 */
+    .form-hint {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: .2rem 1rem;
+      font-size: .8125rem;
+    }
+
+    .btn { margin-block-start: 2rem; }
+  }
+
+  /* ====== フッター（HTML では .dark と組み合わせている） ======
+     .dark で文字の色が白系になる。背景だけ、ほかの .dark より濃い緑にする */
+  .site-footer {
+    padding-block: clamp(3rem, 6vw, 4.5rem) 1.5rem;
+    background-color: var(--leaf-900);
+    font-size: .875rem;
+
+    .site-footer-inner { --min: 14rem; }   /* ロゴ・メニュー・店舗情報の 3 列 */
+
+    h2 {
+      margin-block-end: .8rem;
+      font-size: .8125rem;
+      letter-spacing: .18em;
+      color: var(--label);
+    }
+
+    .site-footer-tagline {
+      margin-block-start: 1rem;
+      color: var(--text-soft);
+    }
+
+    li + li { margin-block-start: .4rem; }
+    nav a { text-decoration: none; }     /* メニューの項目には下線を付けない。店舗情報の電話とメールには下線を残す */
+    a:hover { color: var(--sun-500); }
+
+    /* 著作権の表示 */
+    .site-footer-copy {
+      margin-block-start: 2.5rem;
+      padding-block-start: 1.5rem;
+      border-block-start: 1px solid var(--line);
+      font-size: .75rem;
+      text-align: center;
+      color: var(--text-soft);
+    }
+  }
+
+  /* ====== 送信後のお礼ページ（thanks.html） ======
+     カードを、画面の上下左右の中央に置く */
+  .thanks {
+    display: grid;
+    place-items: center;
+    min-block-size: 100dvh;              /* 少なくとも画面の高さいっぱい */
+    padding: 2rem;
+
+    .card {
+      inline-size: min(100%, 36rem);
+      text-align: center;
+    }
+
+    p { margin-block: 1rem 2rem; }
+  }
+}

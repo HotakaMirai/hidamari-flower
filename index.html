@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<!--
+  ひだまりフラワー — 街角の花屋の 1 ページサイト
+  ============================================================
+  ファイルの構成
+    index.html              … このページ（HTML は、内容と構造だけを書く）
+    stylesheets/style.css   … 見た目。ここから base・components・sections・utilities を読み込む
+    javascripts/main.js     … 動き（メニューの開閉、料金の計算、写真の拡大など）
+    images/                 … 写真とロゴ
+    thanks.html             … お問い合わせを送ったあとに表示するページ
+
+  class と data-* の使い分け
+    class="card"         … 見た目のための名前。CSS が使う
+    data-reveal など     … JavaScript が要素を探すための目印
+    id="price" など      … ページ内リンクの行き先や、JavaScript で 1 つだけ探したい要素
+-->
+<!-- lang="ja" で日本語のページだと伝える。no-js は、JavaScript が動くと main.js が取り除く -->
+<html lang="ja" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <!-- スマートフォンでも、画面の幅に合わせて表示する -->
+  <meta name="viewport" content="width=device-width">
+  <title>ひだまりフラワー｜日常に、小さな「ひだまり」を。</title>
+  <!-- 検索結果に表示される、ページの説明文 -->
+  <meta name="description" content="ひだまりフラワーは、季節の切り花や花束、植物と自然素材の鉢カバーを揃えた街角の花屋です。一輪から気軽にお立ち寄りください。">
+  <!-- スマートフォンのブラウザで、アドレスバーなどに使われる色 -->
+  <meta name="theme-color" content="#416b49">
+  <!-- SNS でページを共有したときに表示される題名と説明（OGP） -->
+  <meta property="og:title" content="ひだまりフラワー｜日常に、小さな「ひだまり」を。">
+  <meta property="og:description" content="贈る日にも、何でもない日にも。季節の花と緑をお届けする街角の花屋です。">
+  <meta property="og:type" content="website">
+  <!-- ブラウザのタブに出る小さなアイコンと、iPhone のホーム画面に追加したときのアイコン -->
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <!-- 見た目は style.css にまとめて書く -->
+  <link rel="stylesheet" href="stylesheets/style.css">
+  <!-- defer を付けると、HTML を最後まで読み込んでから JavaScript が実行される -->
+  <script src="javascripts/main.js" defer></script>
+</head>
+<body>
+
+  <!--
+    アイコンの定義。<symbol> に id を付けておき、使う場所で <svg><use href="#i-flower"/></svg> のように呼び出す。
+    同じアイコンを何度でも使え、色は CSS の color で変えられる（stroke="currentColor"）。
+  -->
+  <!-- アイコンはこのページ内で定義し、外部ライブラリなしで使う。hidden で画面には出さない。 -->
+  <svg hidden xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-flower" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10.5" r="2.2"/><path d="M9.4 6.9C7 1.1 17 1.1 14.6 6.9C19.4 2.9 22.4 12.3 16.2 11.9C21.5 15.1 13.5 21 12 14.9C10.5 21 2.5 15.1 7.8 11.9C1.6 12.3 4.6 2.9 9.4 6.9Z"/><path d="M12 14.9V22"/></g></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M20.5 3.5C11 3.5 4 6.5 4 14a6 6 0 0 0 6 6c7.5 0 10.5-7 10.5-16.5ZM5 19c3-5 6-7 11-10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="12" rx="1"/><path d="M2 9h20M12 9v12M12 9c-5 0-8-2-6-5 2-2 5 1 6 5Zm0 0c5 0 8-2 6-5-2-2-5 1-6 5Z"/></g></symbol>
+    <symbol id="i-pot" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16l-2 10H6L4 11ZM3 8h18v3H3zM12 8V2m0 5c-3-4-6-4-7-3 1 3 4 4 7 3Zm0 0c3-4 6-4 7-3-1 3-4 4-7 3Z"/></g></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 1.5v2M12 20.5v2M1.5 12h2M20.5 12h2M4.5 4.5 6 6m12 12 1.5 1.5m0-15L18 6M6 18l-1.5 1.5"/></g></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="m3.5 7 7.4 5.2a2 2 0 0 0 2.2 0L20.5 7"/></g></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 6.8V12l3.4 2.2"/></g></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 21s6.5-6 6.5-10.4A6.5 6.5 0 0 0 5.5 10.6C5.5 15 12 21 12 21Z"/><circle cx="12" cy="10.4" r="2.4"/></g></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m4.5 12.6 4.8 4.8L19.5 7.2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4.5 12h15m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+  </svg>
+
+  <!-- キーボードで操作する人のための「本文へスキップ」。Tab キーを押したときだけ表示される -->
+  <a class="skip-link" href="#main">本文へスキップ</a>
+
+  <!-- ====== ヘッダー（画面の上に固定される） ====== -->
+  <header class="site-header" id="header">
+    <div class="site-header-inner">
+      <!-- ロゴ。押すとページの先頭へ戻る。画像の alt を空にしているのは、店名を文字でも書いているため -->
+      <a class="brand" href="#hero" aria-label="ひだまりフラワー ホーム">
+        <img src="images/logo-mark.webp" width="44" height="44" alt="">
+        <span><strong>ひだまりフラワー</strong><small>HIDAMARI FLOWER</small></span>
+      </a>
+      <!-- メニュー。広い画面では横一列、狭い画面ではボタンで開閉する -->
+      <nav class="gnav" id="gnav" aria-label="メインナビゲーション">
+        <ul>
+          <li><a href="#about">お店について</a></li>
+          <li><a href="#service">お花と雑貨</a></li>
+          <li><a href="#reason">こだわり</a></li>
+          <li><a href="#flow">ご注文の流れ</a></li>
+          <li><a href="#price">料金の目安</a></li>
+          <li><a href="#faq">よくある質問</a></li>
+        </ul>
+        <a class="btn" href="#contact">お店のご案内<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      </nav>
+      <!--
+        狭い画面でメニューを開閉するボタン。
+        aria-expanded は開いているかどうか（true / false）、aria-controls は開閉する相手の id。
+        どちらも読み上げソフトに状態を伝えるための属性で、main.js が書き換える。
+      -->
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="メニュー" aria-expanded="false" aria-controls="gnav">
+        <svg class="nav-toggle-open" aria-hidden="true"><use href="#i-menu"/></svg>
+        <svg class="nav-toggle-close" aria-hidden="true"><use href="#i-close"/></svg>
+      </button>
+    </div>
+    <!-- 読み進めた割合を示す線。aria-hidden="true" は、読み上げソフトに読ませない印 -->
+    <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+  </header>
+
+  <!-- ====== 本文。スキップリンクの行き先（#main） ====== -->
+  <main id="main">
+    <!-- ====== ヒーロー（最初に見える領域） ====== -->
+    <section class="hero" id="hero">
+      <!-- 流れるキャッチコピー。同じ文の組を 2 つ並べて、切れ目なくつなげる。 -->
+      <div class="marquee" aria-hidden="true">
+        <p><span>日常に、小さなひだまりを。</span><span>Flowers for everyday moments.</span><span>季節の花を、暮らしのそばに。</span><span>Hidamari Flower.</span></p>
+        <p><span>日常に、小さなひだまりを。</span><span>Flowers for everyday moments.</span><span>季節の花を、暮らしのそばに。</span><span>Hidamari Flower.</span></p>
+      </div>
+      <!-- 文章（左）と写真（右）。.grid なので、狭い画面では縦に並ぶ -->
+      <div class="wrap grid hero-inner">
+        <div>
+          <p class="hero-badge"><svg aria-hidden="true"><use href="#i-flower"/></svg>街角の小さな花屋</p>
+          <!-- h1 はページの一番大きな見出し。1 ページに 1 つだけ置く -->
+          <h1>日常に、小さな<br><em>「ひだまり」</em>を。</h1>
+          <p class="hero-en">Flowers for everyday moments.</p>
+          <p class="hero-lead">贈る日にも、何でもない日にも。<br>季節の花と緑で、毎日にそっと彩りを添えます。</p>
+          <div class="hero-actions">
+            <a class="btn" href="#service"><svg aria-hidden="true"><use href="#i-flower"/></svg>お花と雑貨を見る</a>
+            <a class="btn btn-outline" href="#about">お店について<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          </div>
+          <ul class="tag-list"><li>一輪のお花</li><li>花束</li><li>アレンジメント</li><li>植物</li><li>鉢カバー</li></ul>
+        </div>
+        <div>
+          <!--
+            width と height は写真の元の大きさ。先に書いておくと、読み込み中に場所が確保され、表示がずれない。
+            fetchpriority="high" は、最初に見える写真なので優先して読み込む指定。
+          -->
+          <figure class="photo hero-photo">
+            <img src="images/shop-exterior.webp" width="1408" height="768" fetchpriority="high" decoding="async" alt="花に囲まれた、ひだまりフラワーの店先">
+          </figure>
+          <!-- 写真に重ねる紹介カード（少し傾けている） -->
+          <div class="card hero-card">
+            <img src="images/logo-with-name.webp" width="480" height="480" alt="ひだまりフラワーのロゴ">
+            <p class="hero-catch">花と、ひだまりを。</p>
+            <p class="hero-owner">店主 <strong>春野 咲良</strong><br>花のある毎日を、お手伝いします</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== ふだんの日にも（お花を選ぶきっかけ） ====== -->
+    <!-- data-reveal を付けた要素は、スクロールして画面に入ると、ふわっと表示される（main.js と utilities.css） -->
+    <section class="section section-warm" id="trouble">
+      <div class="wrap">
+        <header class="sec-head" data-reveal>
+          <p class="sec-head-en">Everyday flowers</p>
+          <h2>贈る日にも、<br><em>ふだんの日</em>にも。</h2>
+          <p class="sec-head-lead">お花を選ぶきっかけは、どんな小さなことでも。</p>
+        </header>
+        <ul class="grid trouble-list" data-reveal>
+          <li class="card">大切な人に、季節を感じる花束を贈りたい。</li>
+          <li class="card">自宅のテーブルに、一輪のお花を飾ってみたい。</li>
+          <li class="card">お祝いに、その人らしい色のアレンジメントを選びたい。</li>
+          <li class="card">部屋に緑を置きたいけれど、育て方が分からない。</li>
+          <li class="card">植物に合う、自然素材の鉢カバーを探したい。</li>
+          <li class="card">どんな花がいいか決まっていないので、相談しながら選びたい。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ====== お店について ====== -->
+    <section class="section" id="about">
+      <div class="wrap">
+        <header class="sec-head" data-reveal>
+          <p class="sec-head-en">About us</p>
+          <h2>日常に、小さな<em>「ひだまり」</em>を。</h2>
+          <p class="sec-head-lead">街角の小さな、あたたかい花屋です。</p>
+        </header>
+        <div class="grid about-story" data-reveal>
+          <div>
+            <p>「ひだまりフラワー」は、街角にある小さな花屋です。太陽の光が差し込むひだまりのように、皆さまの毎日にそっと寄り添い、心を明るくするお花を届けたい。そんな思いからお店を開きました。</p>
+            <p>特別な日の華やかなギフトはもちろん、ご自宅のテーブルに飾る一輪まで。季節感あふれる花や植物をご用意しています。植物が健やかに育つよう、通気性のよい麻やジュートなど、自然素材のプランターや鉢カバーも選びました。</p>
+            <p>お散歩やお買い物の途中に、お花の香りを楽しみに、どうぞ気軽にお立ち寄りください。</p>
+          </div>
+          <figure class="photo">
+            <!-- loading="lazy" で、画面に近づいてから読み込む。最初の表示が速くなる -->
+            <img src="images/shop-interior.webp" width="1408" height="768" loading="lazy" decoding="async" alt="季節の花が並ぶ、ひだまりフラワーの店内">
+          </figure>
+        </div>
+        <p class="about-closing" data-reveal>一輪から、あなたの暮らしに。</p>
+      </div>
+    </section>
+
+    <!-- ====== お花と雑貨 ====== -->
+    <!-- .card（白い箱）と .icon（アイコンの四角）を組み合わせたカードを、.grid で並べる -->
+    <section class="section section-tint" id="service">
+      <div class="wrap">
+        <header class="sec-head" data-reveal>
+          <p class="sec-head-en">Flowers &amp; greenery</p>
+          <h2>お花と<em>雑貨</em></h2>
+          <p class="sec-head-lead">贈りものにも、暮らしの中の楽しみにも。</p>
+        </header>
+        <div class="grid service-grid">
+          <article class="card" data-reveal>
+            <span class="icon"><svg aria-hidden="true"><use href="#i-flower"/></svg></span>
+            <h3>季節の切り花</h3>
+            <p>一輪から気軽に。季節ごとの色や香りを、お部屋に迎えてみませんか。</p>
+            <ul class="tag-list"><li>一輪から</li><li>季節の花</li></ul>
+          </article>
+          <article class="card" data-reveal>
+            <span class="icon"><svg aria-hidden="true"><use href="#i-gift"/></svg></span>
+            <h3>花束・アレンジメント</h3>
+            <p>お祝いやお礼、何でもない日の贈りものに。用途や好きな色を伺ってお作りします。</p>
+            <ul class="tag-list"><li>お祝い</li><li>贈りもの</li><li>ご自宅用</li></ul>
+          </article>
+          <article class="card" data-reveal>
+            <span class="icon"><svg aria-hidden="true"><use href="#i-leaf"/></svg></span>
+            <h3>植物と緑</h3>
+            <p>はじめて植物を育てる方にも、置き場所や水やりのコツをお伝えします。</p>
+            <ul class="tag-list"><li>植物</li><li>育て方の相談</li></ul>
+          </article>
+          <article class="card" data-reveal>
+            <span class="icon"><svg aria-hidden="true"><use href="#i-pot"/></svg></span>
+            <h3>自然素材の鉢カバー</h3>
+            <p>麻やジュートの風合いを楽しめる、通気性のよいプランターや鉢カバーを揃えています。</p>
+            <ul class="tag-list"><li>麻</li><li>ジュート</li><li>鉢カバー</li></ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== こだわり ====== -->
+    <section class="section" id="reason">
+      <div class="wrap">
+        <header class="sec-head" data-reveal>
+          <p class="sec-head-en">Our care</p>
+          <h2>ひだまりフラワーの<em>こだわり</em></h2>
+          <p class="sec-head-lead">花を選ぶ時間から、楽しんでいただけるように。</p>
+        </header>
+        <div class="grid reason-grid">
+          <!-- 先頭の 1 枚だけ .dark を付けて暗い背景にし、横いっぱいに広げる -->
+          <article class="card dark reason-feature" data-reveal>
+            <span class="icon"><svg aria-hidden="true"><use href="#i-sun"/></svg></span>
+            <h3>季節の表情を、そのままに</h3>
+            <p>その時季ならではの花や緑を選び、色合わせや香りも楽しめるようにご提案します。</p>
+            <p class="reason-catch">花と、ひだまりを。</p>
+          </article>
+          <article class="card" data-reveal>
+            <span class="icon"><svg aria-hidden="true"><use href="#i-flower"/></svg></span>
+            <h3>一輪から、気軽に</h3>
+            <p>「まず一輪飾ってみたい」という方も歓迎です。花器や置き場所に合うお花を一緒に選びます。</p>
+          </article>
+          <article class="card" data-reveal>
+            <span class="icon"><svg aria-hidden="true"><use href="#i-gift"/></svg></span>
+            <h3>贈る気持ちに合わせて</h3>
+            <p>色や雰囲気、贈る相手の好みを伺い、気持ちが伝わる花束をお作りします。</p>
+          </article>
+          <article class="card" data-reveal>
+            <span class="icon"><svg aria-hidden="true"><use href="#i-leaf"/></svg></span>
+            <h3>育て方もお伝えします</h3>
+            <p>水やりや飾る場所など、植物と長く付き合うためのコツを丁寧にお話しします。</p>
+          </article>
+          <article class="card" data-reveal>
+            <span class="icon"><svg aria-hidden="true"><use href="#i-pot"/></svg></span>
+            <h3>自然素材を暮らしに</h3>
+            <p>植物に合うだけでなく、お部屋にもなじむ麻やジュートの鉢カバーを揃えています。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 花束を選ぶ流れ ====== -->
+    <!-- 順番に意味があるので、番号付きのリスト <ol> を使う -->
+    <section class="section section-warm" id="flow">
+      <div class="wrap">
+        <header class="sec-head" data-reveal>
+          <p class="sec-head-en">How to order</p>
+          <h2>花束を選ぶ<em>流れ</em></h2>
+          <p class="sec-head-lead">お花に詳しくなくても大丈夫。ご希望を聞かせてください。</p>
+        </header>
+        <ol class="grid flow-list">
+          <li class="card" data-reveal><span class="icon">1</span><h3>用途を教えてください</h3><p>贈りものかご自宅用か、いつ使うかをお聞かせください。</p></li>
+          <li class="card" data-reveal><span class="icon">2</span><h3>色とご予算を相談</h3><p>好きな色や雰囲気、ご予算に合わせて花を選びます。迷っていてもご相談ください。</p></li>
+          <li class="card" data-reveal><span class="icon">3</span><h3>花束をお作りします</h3><p>季節の花を組み合わせ、贈る場面や飾る場所を思い浮かべながら仕上げます。</p></li>
+          <li class="card" data-reveal><span class="icon">4</span><h3>店頭でお受け取り</h3><p>できあがったお花と一緒に、お手入れのポイントもお伝えします。</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ====== 季節の花たち ====== -->
+    <section class="section" id="gallery">
+      <div class="wrap">
+        <header class="sec-head" data-reveal>
+          <p class="sec-head-en">Gallery</p>
+          <h2>季節の<em>花たち</em></h2>
+          <p class="sec-head-lead">花の組み合わせや表情は、季節ごとに変わります。</p>
+        </header>
+        <!--
+          写真を押すと、下の <dialog> で拡大表示する（main.js）。
+          リンク先は画像ファイルそのものなので、JavaScript が動かなくても写真は開ける。
+          data-lightbox-open は、main.js が写真のリンクを探すための目印。
+        -->
+        <div class="grid gallery" data-reveal>
+          <figure class="photo">
+            <a href="images/arrangement-s.webp" data-lightbox-open aria-label="Sサイズのアレンジメントを拡大して見る">
+              <img src="images/arrangement-s.webp" width="848" height="1272" loading="lazy" decoding="async" alt="小ぶりな白い陶器に生けたSサイズのアレンジメント">
+            </a>
+            <figcaption>小さな贈りものに、やさしい彩り (Sサイズ)</figcaption>
+          </figure>
+          <figure class="photo">
+            <a href="images/arrangement-m.webp" data-lightbox-open aria-label="Mサイズのアレンジメントを拡大して見る">
+              <img src="images/arrangement-m.webp" width="848" height="1272" loading="lazy" decoding="async" alt="横長のかごに生けたMサイズのアレンジメント">
+            </a>
+            <figcaption>大切な日に、花のぬくもりを (Mサイズ)</figcaption>
+          </figure>
+          <figure class="photo">
+            <a href="images/arrangement-l.webp" data-lightbox-open aria-label="Lサイズのアレンジメントを拡大して見る">
+              <img src="images/arrangement-l.webp" width="848" height="1272" loading="lazy" decoding="async" alt="脚付きのテラコッタ鉢に生けたLサイズのアレンジメント">
+            </a>
+            <figcaption>特別な想いを、華やかな花に込めて (Lサイズ)</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 写真の拡大表示。ブラウザ標準の dialog に、写真の切り替えボタンを組み合わせる。 -->
+    <!-- showModal() で開くと、ページの手前に重なる。Esc キーで閉じられる -->
+    <dialog class="lightbox dark" id="flowerLightbox" aria-labelledby="lightboxCaption">
+      <img class="lightbox-image" alt="">
+      <div class="lightbox-bar">
+        <button class="lightbox-prev" type="button" data-lightbox-prev aria-label="前の写真"><svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
+        <p class="lightbox-caption" id="lightboxCaption" aria-live="polite"></p>
+        <button type="button" data-lightbox-next aria-label="次の写真"><svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
+        <button type="button" data-lightbox-close aria-label="拡大表示を閉じる" autofocus><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      </div>
+    </dialog>
+
+    <!-- ====== 料金の目安 ====== -->
+    <section class="section section-tint" id="price">
+      <div class="wrap">
+        <header class="sec-head" data-reveal>
+          <p class="sec-head-en">Price guide</p>
+          <h2>アレンジメントの<em>料金目安</em></h2>
+          <p class="sec-head-lead">サイズ・点数・オプションを選んで合計を確かめ、そのままご注文いただけます。</p>
+        </header>
+        <div class="grid price-layout">
+          <div class="card" data-reveal>
+            <!-- 表。<caption> が題名、<thead> が見出しの行、<tbody> が中身。scope は見出しが列か行かを示す -->
+            <table class="price-table">
+              <caption>アレンジメントの価格（税込）</caption>
+              <thead><tr><th scope="col">サイズ</th><th scope="col">価格</th><th scope="col">イメージ</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">S</th><td>3,000&nbsp;円</td><td>小さな贈りものに</td></tr>
+                <tr><th scope="row">M</th><td>5,000&nbsp;円</td><td>お祝いの定番に</td></tr>
+                <tr><th scope="row">L</th><td>8,000&nbsp;円</td><td>華やかな贈りものに</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <!--
+            料金シミュレーター。選んだ内容から、main.js が合計金額を計算する。
+            <fieldset> と <legend> で、関係のある入力欄をひとまとめにし、見出しを付ける。
+            <label> で入力欄を包むと、文字を押しても選べる。
+          -->
+          <div class="card dark sim" data-reveal>
+            <h3>アレンジメント料金シミュレーター</h3>
+            <p>選んだ条件から合計金額を計算します。</p>
+            <fieldset class="sim-field">
+              <legend>サイズを選ぶ</legend>
+              <label class="choice"><input type="radio" name="size" value="3000" data-name="S">S（3,000円）</label>
+              <label class="choice"><input type="radio" name="size" value="5000" data-name="M" checked>M（5,000円）</label>
+              <label class="choice"><input type="radio" name="size" value="8000" data-name="L">L（8,000円）</label>
+            </fieldset>
+            <div class="sim-field">
+              <label for="simQuantity">点数：<output id="simQuantityOut" for="simQuantity">1 点</output></label>
+              <input type="range" id="simQuantity" min="1" max="5" step="1" value="1">
+            </div>
+            <fieldset class="sim-field">
+              <legend>オプション（1点あたり）</legend>
+              <label class="choice"><input type="checkbox" name="option" value="300" data-name="ラッピング" checked>ラッピング（+300円）</label>
+              <label class="choice"><input type="checkbox" name="option" value="1200" data-name="花器">花器（+1,200円）</label>
+            </fieldset>
+            <!-- <output> は計算結果を表示する要素。aria-live="polite" で、値が変わると読み上げソフトが読む -->
+            <p class="sim-result">合計金額<output class="sim-amount" id="simAmount" aria-live="polite">5,300 円</output></p>
+            <!--
+              注文のボタン。押すと、選んだ内容をお問い合わせのフォームに書き写し、フォームへ移る（main.js）。
+              注文を受けるしくみを新しく作らず、お問い合わせの送信で注文を受け付ける。
+              JavaScript が動かないときも、リンクなのでフォームへは移れる
+            -->
+            <a class="btn btn-sun" href="#inquiry" data-order>この内容で注文する<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+            <p class="sim-note">※ 作例のサイトのため、実際には注文されません。押すと、選んだ内容がお問い合わせのフォームに入ります。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 店主のご挨拶 ====== -->
+    <section class="section" id="profile">
+      <div class="wrap">
+        <div class="card profile" data-reveal>
+          <figure class="photo profile-photo">
+            <img src="images/profile.webp" width="1408" height="768" loading="lazy" decoding="async" alt="花に囲まれて店頭に立つ、ひだまりフラワーの店主 春野咲良">
+          </figure>
+          <div class="profile-body">
+            <p class="profile-role">店主のご挨拶</p>
+            <h2 class="profile-name">春野 咲良<span>Haruno Sakura</span></h2>
+            <p class="profile-msg">こんにちは。「ひだまりフラワー」店主の春野咲良です。お花や緑が身近にある暮らしの豊かさをお伝えしたくて、このお店を開きました。</p>
+            <p class="profile-msg">毎日の散歩では、春の桜や水仙、初夏に道端で揺れる昼咲月見草など、移り変わる季節の草花を眺めるのが楽しみです。</p>
+            <p class="profile-msg">「お花を飾ってみたいけれど、すぐ枯らしてしまいそう」という方もご安心ください。水やりのコツや風通しのよい飾り方を、一緒に考えます。<strong>お気に入りの一輪を探しに、気軽に遊びにいらしてくださいね。</strong>お店でお会いできるのを楽しみにしています。</p>
+            <ul class="check-list">
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>一輪から気軽にご相談ください</li>
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>季節の花を一緒に選びます</li>
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>飾り方・育て方もお伝えします</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== よくある質問 ====== -->
+    <section class="section section-warm" id="faq">
+      <div class="wrap wrap-narrow">
+        <header class="sec-head" data-reveal>
+          <p class="sec-head-en">FAQ</p>
+          <h2>よくある<em>ご質問</em></h2>
+          <p class="sec-head-lead">お花を選ぶときの疑問をまとめました。</p>
+        </header>
+        <!--
+          <details> と <summary> は、押すと開閉する HTML の標準の部品。JavaScript は要らない。
+          同じ name="faq" を付けると、1 つ開いたときにほかが閉じる。open を付けたものは、最初から開いている。
+        -->
+        <div class="faq-list" data-reveal>
+          <details class="card faq" name="faq" open><summary>一輪だけでも買えますか？</summary><p>もちろんです。お部屋の雰囲気や飾る場所に合う一輪を、一緒に選びましょう。</p></details>
+          <details class="card faq" name="faq"><summary>花束の予算が決まっていません。相談できますか？</summary><p>はい。用途や贈る相手の好みを伺いながら、花の種類やボリュームを一緒に考えます。</p></details>
+          <details class="card faq" name="faq"><summary>花束はいつ相談すればよいですか？</summary><p>お渡しする日が決まっている場合は、早めにご相談ください。季節の花の中から、ご希望に合う組み合わせを考えます。</p></details>
+          <details class="card faq" name="faq"><summary>切り花を長く楽しむコツはありますか？</summary><p>花瓶を清潔に保ち、水をこまめに替えるのが基本です。直射日光や暖房の風を避けて飾ると、花が傷みにくくなります。</p></details>
+          <details class="card faq" name="faq"><summary>植物を育てるのが初めてでも大丈夫ですか？</summary><p>大丈夫です。置き場所や水やりの頻度など、植物に合わせた育て方をお伝えします。</p></details>
+          <details class="card faq" name="faq"><summary>鉢カバーも一緒に選べますか？</summary><p>はい。植物の大きさやお部屋の雰囲気に合わせて、麻やジュートなど自然素材の鉢カバーをご案内します。</p></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== お店のご案内 ====== -->
+    <!-- .dark を付けたので、中の文字やカードの色が暗い背景用に変わる（components.css） -->
+    <section class="section dark visit" id="contact">
+      <div class="wrap">
+        <header class="sec-head" data-reveal>
+          <p class="sec-head-en">Visit us</p>
+          <h2>お気に入りの<em>一輪</em>を、探しに。</h2>
+          <p class="sec-head-lead">お散歩やお買い物の途中に、ふらりとお立ち寄りください。<br>花束や植物のことも、気軽にご相談いただけます。</p>
+          <dl class="hours">
+            <div><dt>営業時間</dt><dd>10:00〜18:00</dd></div>
+            <div><dt>定休日</dt><dd>水曜日</dd></div>
+          </dl>
+        </header>
+        <div class="grid contact-cards" data-reveal>
+          <div class="card"><span class="icon"><svg aria-hidden="true"><use href="#i-map"/></svg></span><span class="contact-label">住所</span><strong class="contact-value">名古屋市桜区<br>ひだまり町 1-2-3</strong></div>
+          <!-- href="tel:…" は電話、href="mailto:…" はメールのリンク。スマートフォンでは発信やメールの画面が開く（番号とアドレスはサンプル） -->
+          <a class="card" href="tel:0520000000"><span class="icon"><svg aria-hidden="true"><use href="#i-clock"/></svg></span><span class="contact-label">電話番号</span><strong class="contact-value">052-000-0000</strong></a>
+          <a class="card" href="mailto:hello@example.co.jp"><span class="icon"><svg aria-hidden="true"><use href="#i-mail"/></svg></span><span class="contact-label">メール</span><strong class="contact-value">hello@example.co.jp</strong></a>
+        </div>
+        <p class="visit-form-link"><a class="btn btn-sun" href="#inquiry">フォームで問い合わせる<svg aria-hidden="true"><use href="#i-arrow"/></svg></a></p>
+        <div class="card visit-map" data-reveal>
+          <div class="visit-map-intro">
+            <h3>鶴舞公園</h3>
+            <p>愛知県名古屋市昭和区鶴舞一丁目1番168号</p>
+          </div>
+          <!-- iframe で、Google マップをページに埋め込む。title は、読み上げソフト向けの地図の説明 -->
+          <iframe
+            title="名古屋市の鶴舞公園の地図"
+            src="https://www.google.com/maps?q=%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%98%AD%E5%92%8C%E5%8C%BA%E9%B6%B4%E8%88%9E1%E4%B8%81%E7%9B%AE1%E7%95%AA168%E5%8F%B7&amp;output=embed"
+            width="900" height="360" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== お問い合わせフォーム ====== -->
+    <section class="section" id="inquiry" aria-labelledby="inquiry-title">
+      <div class="wrap wrap-narrow">
+        <header class="sec-head" data-reveal>
+          <p class="sec-head-en">Contact form</p>
+          <h2 id="inquiry-title">お<em>問い合わせ</em></h2>
+          <p class="sec-head-lead">花束のご相談や、お花・植物についてのご質問をお送りください。</p>
+        </header>
+        <!-- action の仮 ID を SSGform で発行された ID に替え、転送先を thanks.html に設定する。 -->
+        <form class="card contact-form" action="https://ssgform.com/s/HidamariFlowerDemo" method="post" data-contact-form data-reveal>
+          <!--
+            label の for と、入力欄の id を同じにすると、項目名と入力欄が結び付く（項目名を押しても入力欄が選ばれる）。
+            required は必須、type="email" はメールアドレスの形か、maxlength は最大の文字数。送信前にブラウザが確かめる。
+            autocomplete を付けると、ブラウザに保存された名前やメールアドレスを入力候補に出せる。
+          -->
+          <div class="grid form-grid">
+            <div class="field">
+              <label for="contactName">お名前 <span class="required">必須</span></label>
+              <input id="contactName" name="お名前" type="text" autocomplete="name" maxlength="60" required>
+            </div>
+            <div class="field">
+              <label for="contactEmail">メールアドレス <span class="required">必須</span></label>
+              <input id="contactEmail" name="メールアドレス" type="email" autocomplete="email" maxlength="254" required>
+            </div>
+            <div class="field">
+              <label for="contactPhone">電話番号 <span class="optional">任意</span></label>
+              <input id="contactPhone" name="電話番号" type="tel" autocomplete="tel" maxlength="20">
+            </div>
+            <div class="field">
+              <label for="contactTopic">お問い合わせの種類 <span class="required">必須</span></label>
+              <select id="contactTopic" name="お問い合わせの種類" required>
+                <option value="">選択してください</option>
+                <option value="ご注文">ご注文（アレンジメント）</option>
+                <option value="花束・アレンジメント">花束・アレンジメント</option>
+                <option value="切り花・植物">切り花・植物</option>
+                <option value="鉢カバー・雑貨">鉢カバー・雑貨</option>
+                <option value="その他">その他</option>
+              </select>
+            </div>
+            <!--
+              受け取り方とお届け先。「ご注文」を選んだときだけ受け取り方を、「お届けする」を選んだときだけお届け先を表示する（CSS の :has()）。
+              disabled の欄は送信されず、必須の確認もされない。main.js が、表示しているときだけ disabled を外す
+            -->
+            <fieldset class="field field-wide receive-field">
+              <legend>受け取り方</legend>
+              <label><input type="radio" name="受け取り方" value="店頭で受け取る" checked disabled>店頭で受け取る</label>
+              <label><input type="radio" name="受け取り方" value="お届けする" data-delivery disabled>お届けする</label>
+            </fieldset>
+            <div class="field field-wide field-postal delivery-field">
+              <label for="contactPostal">郵便番号 <span class="required">必須</span></label>
+              <!-- inputmode="numeric" で、スマートフォンでは数字のキーボードを出す -->
+              <input id="contactPostal" name="郵便番号" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="8" placeholder="例：1000001" required disabled>
+              <p class="form-hint" data-postal-status aria-live="polite">7 桁を入れると、住所が入ります。</p>
+            </div>
+            <div class="field field-wide delivery-field">
+              <label for="contactAddress">住所 <span class="required">必須</span></label>
+              <input id="contactAddress" name="住所" type="text" autocomplete="street-address" maxlength="120" required disabled>
+            </div>
+            <div class="field field-wide">
+              <label for="contactMessage">お問い合わせ内容 <span class="required">必須</span></label>
+              <textarea id="contactMessage" name="お問い合わせ内容" rows="7" minlength="10" maxlength="1000" required></textarea>
+              <p class="form-hint">
+                <span>10〜1,000文字でご入力ください。</span>
+                <output for="contactMessage" data-message-count>0 / 1,000文字</output>
+              </p>
+            </div>
+          </div>
+          <!-- SSGform の簡易スパム対策用。人には見えない欄で、入力があれば迷惑メールとして扱われる。 -->
+          <p hidden>
+            <label>入力しないでください <input type="text" name="wana" tabindex="-1" autocomplete="off"></label>
+          </p>
+          <button class="btn" type="submit">送信する<svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====== フッター ====== -->
+  <footer class="site-footer dark">
+    <div class="wrap grid site-footer-inner">
+      <div>
+        <a class="brand" href="#hero">
+          <img src="images/logo-mark.webp" width="44" height="44" alt="">
+          <span><strong>ひだまりフラワー</strong><small>HIDAMARI FLOWER</small></span>
+        </a>
+        <p class="site-footer-tagline">季節の切り花・花束・植物<br>麻やジュートの鉢カバー</p>
+      </div>
+      <nav aria-label="フッターナビゲーション">
+        <h2>メニュー</h2>
+        <ul>
+          <li><a href="#about">お店について</a></li>
+          <li><a href="#service">お花と雑貨</a></li>
+          <li><a href="#reason">こだわり</a></li>
+          <li><a href="#flow">ご注文の流れ</a></li>
+          <li><a href="#price">料金の目安</a></li>
+          <li><a href="#profile">店主のご挨拶</a></li>
+          <li><a href="#gallery">季節の花たち</a></li>
+          <li><a href="#faq">よくあるご質問</a></li>
+          <li><a href="#inquiry">お問い合わせ</a></li>
+        </ul>
+      </nav>
+      <div>
+        <h2>店舗情報</h2>
+        <p>住所：愛知県名古屋市桜区ひだまり町 1-2-3</p>
+        <p>営業時間：10:00〜18:00／水曜定休</p>
+        <p>電話：<a href="tel:0520000000">052-000-0000</a></p>
+        <p>メール：<a href="mailto:hello@example.co.jp">hello@example.co.jp</a></p>
+      </div>
+    </div>
+    <p class="site-footer-copy"><small>&copy; 2026 Hidamari Flower. All rights reserved.</small></p>
+  </footer>
+
+  <!-- ページ上部へ戻るボタン。スクロールすると表示される（main.js） -->
+  <button class="to-top" id="toTop" type="button" aria-label="ページ上部へ戻る"><svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
+</body>
+</html>

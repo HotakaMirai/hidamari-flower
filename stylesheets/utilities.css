@@ -1,0 +1,64 @@
+/* ============================================================
+   utilities.css — 最後に適用する補助スタイル
+   ------------------------------------------------------------
+   一番後ろの層なので、ほかの層の指定より優先される。
+   スクロールに合わせた表示の演出、「動きを減らす」設定への対応、印刷用の指定を書いている。
+   ============================================================ */
+@layer utilities {
+  /* hidden 属性の付いた要素は、必ず隠す。
+     ブラウザが用意している [hidden] の指定は、自分で書いた CSS に負ける。
+     リセットの :where(img, svg) { display: block; } などに負けないよう、一番後ろの層で隠し直す。
+     ほかの層で display を指定した要素に hidden を付けても、ここが優先される。 */
+  [hidden] { display: none; }
+
+  /* スクロールして画面に入ったら、JavaScript が .is-revealed を付けて表示する
+     HTML で data-reveal 属性を付けた要素が対象。
+     最初は透明（opacity: 0）で 24px 下にずらしておき、.is-revealed が付くと元の位置へ浮かび上がる。 */
+  [data-reveal] {
+    opacity: 0;
+    translate: 0 24px;
+    transition: opacity .7s ease, translate .7s ease;
+
+    &.is-revealed {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  /* JavaScript が動かないときも、内容は必ず見えるようにする
+     <html class="no-js"> の no-js は、JavaScript が動くと main.js が取り除く。
+     残っているのは JavaScript が動かなかったときなので、最初から表示しておく。 */
+  .no-js [data-reveal] {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /* 受け取り方とお届け先の欄は、JavaScript が disabled を外さないと使えないので、出さない。
+     お届け先は、お問い合わせ内容の欄に書いてもらう */
+  .no-js :is(.receive-field, .delivery-field) { display: none; }
+
+  /* 「動きを減らす」設定の人には動かさない
+     OS の設定で動きを減らすように選んだ人（Mac の「動きを減らす」、iPhone の「視差効果を減らす」など）に当てはまる。 */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }      /* ページ内リンクでも、なめらかにスクロールせず、すぐ移動する */
+
+    /* すべての要素のアニメーションと変化の時間を、ほぼ 0 にする */
+    *, *::before, *::after {
+      animation-duration: .01ms;
+      transition-duration: .01ms;
+    }
+
+    [data-reveal] {
+      opacity: 1;
+      translate: 0 0;
+    }
+
+    /* 流れ続ける動きは、時間を短くすると高速で回ってしまうので、止める */
+    .marquee p { animation: none; }
+  }
+
+  /* 印刷するときは、画面操作のための部品を出さない */
+  @media print {
+    .site-header, .to-top, .sim, .marquee { display: none; }
+  }
+}
